@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Form\ArticleType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,24 +61,19 @@ class IndexController extends AbstractController
     }
 
     #[Route('/article/new', name: 'new_article', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $article = new Article();
-        $form = $this->createFormBuilder($article)
-            ->add('nom', TextType::class)
-            ->add('prix', TextType::class)
-            ->add('save', SubmitType::class, [
-                'label' => 'Créer'
-            ])
-            ->getForm();
+        $form = $this->createForm(ArticleType::class, $article);
     
         $form->handleRequest($request);
     
         if ($form->isSubmitted() && $form->isValid()) {
             $article = $form->getData();
     
-            $this->entityManager->persist($article);
-            $this->entityManager->flush();
+            // Persist and flush the article to the database using injected entityManager
+            $entityManager->persist($article);
+            $entityManager->flush();
     
             return $this->redirectToRoute('article_list');
         }
@@ -86,6 +82,8 @@ class IndexController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+    
+       
     
 
 
@@ -102,7 +100,8 @@ public function edit(Request $request, $id): Response
         ->add('nom', TextType::class)
         ->add('prix', TextType::class)
         ->add('save', SubmitType::class, [
-            'label' => 'Modifier'
+            'label' => 'Modifier',
+            'attr' => ['class' => 'btn btn-success']
         ])
         ->getForm();
 
