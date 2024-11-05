@@ -2,34 +2,37 @@
 
 namespace App\Entity;
 
+use App\Repository\ArticleRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: "App\Repository\ArticleRepository")]
+#[ORM\Entity(repositoryClass: ArticleRepository::class)]
 class Article
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(length: 255)]
     #[Assert\Length(
         min: 5,
         max: 50,
         minMessage: "Le nom d'un article doit comporter au moins {{ limit }} caractères",
         maxMessage: "Le nom d'un article doit comporter au plus {{ limit }} caractères"
     )]
-    private $nom;
+    private ?string $nom = null;
 
-    #[ORM\Column(type: "decimal", precision: 10, scale: 2)] // Updated the scale for proper decimal handling
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     #[Assert\NotEqualTo(
         value: 0,
-        message: "Le prix d’un article ne doit pas être égal à 0 "
+        message: "Le prix d’un article ne doit pas être égal à 0"
     )]
-    private $prix;
+    private ?string $prix = null; // Consider keeping prix as string to handle precision properly
 
-    // Getters and Setters
+    #[ORM\ManyToOne(inversedBy: 'articles')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Category $category = null;
 
     public function getId(): ?int
     {
@@ -41,20 +44,31 @@ class Article
         return $this->nom;
     }
 
-    public function setNom(string $nom): self
+    public function setNom(string $nom): static
     {
         $this->nom = $nom;
         return $this;
     }
 
-    public function getPrix(): ?float
+    public function getPrix(): ?string // Keep return type as string
     {
         return $this->prix;
     }
 
-    public function setPrix(float $prix): self
+    public function setPrix(string $prix): static // Keep parameter type as string
     {
         $this->prix = $prix;
+        return $this;
+    }
+
+    public function getCategory(): ?Category // Corrected method name to match naming conventions
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): static // Corrected method name to match naming conventions
+    {
+        $this->category = $category;
         return $this;
     }
 }

@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Controller;
+use App\Entity\Category;
+use App\Form\CategoryType;
 
 use App\Entity\Article;
 use App\Form\ArticleType;
@@ -141,6 +143,22 @@ public function delete(Request $request, $id): Response
     }
 
     return $this->redirectToRoute('article_list');
+}
+
+#[Route('/category/newCat', name: 'new_category', methods: ['GET', 'POST'])]
+public function newCategory(Request $request): Response {
+    $category = new Category();
+    $form = $this->createForm(CategoryType::class, $category);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $this->entityManager->persist($category);
+        $this->entityManager->flush();
+    }
+
+    return $this->render('articles/newCategory.html.twig', [
+        'form' => $form->createView()
+    ]);
 }
 
 
